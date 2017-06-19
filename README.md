@@ -1,20 +1,20 @@
 # query
 Light weight jQuery like library, but limited on feature, but you will find most of the DOM manipulation functions in this library
 
-1. Functions supported by this library
-  i.  ready function: query(document).ready(function(){//code});
-  ii. find  function: query(selector).find(child-selector)
-  iii.first function: query(selector).first()
-  iv. addClass
-  v. removeClass
-  vi. hasClass
-  vii. append: query(selector).append(html string)
-  viii. html: query(selector).html(html string)
-  ix. on: query(selector).on(event, callback)
-  x. off: query(selector).off(event, callback)
-  xi. each: query(selector).each(element, index)
-  xii. trigger: query(element).trigger(event, data)
-  xiii. prop: query(element).prop("checked",true);
-  xiv. attr
-  xv. data
-  xvi. css
+##Functions supported by this library
+  *  ready function: query(document).ready(function(){//code});
+  * find  function: query(selector).find(child-selector)
+  * first function: query(selector).first()
+  * addClass
+  * removeClass
+  * hasClass
+  * append: query(selector).append(html string)
+  * html: query(selector).html(html string)
+  * on: query(selector).on(event, callback)
+  * off: query(selector).off(event, callback)
+  * each: query(selector).each(element, index)
+  * trigger: query(element).trigger(event, data)
+  * prop: query(element).prop("checked",true);
+  * attr
+  * data
+  * css
