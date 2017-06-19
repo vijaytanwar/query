@@ -1,7 +1,7 @@
 # query
 Light weight jQuery like library, but limited on feature, but you will find most of the DOM manipulation functions in this library
 
-##Functions supported by this library
+## Functions supported by this library ##
   *  ready function: query(document).ready(function(){//code});
   * find  function: query(selector).find(child-selector)
   * first function: query(selector).first()
