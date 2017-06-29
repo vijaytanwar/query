@@ -1,5 +1,5 @@
 # query
-Light weight jQuery like library, but limited on feature, but you will find most of the DOM manipulation functions in this library
+Light weight jQuery like library, limited on feature, but you will find most of the DOM manipulation functions in this library. This library provides number of reusable javascript function which you can utilise in your project.
 
 ## Functions supported by this library ##
   *  ready function: query(document).ready(function(){//code});
@@ -18,3 +18,6 @@ Light weight jQuery like library, but limited on feature, but you will find most
   * attr
   * data
   * css
+
+
+### I am still updating this library, so keep watching for new updates. And you are welcome to enhance this library. My Email: Vijaytamar@live.in
