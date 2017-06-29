@@ -1,12 +1,10 @@
 /**
 * One of the lightest DOM query library, which has number of reuable function, which can be used to manipulate DOM
 */
-
 var queryConfig = {
     addEventListener: document.addEventListener,
     removeEventListener: document.removeEventListener,
     createEvent: "createEvent" in document,
-    noop: function () { }
 };
 var query = (function (document) {
     var readyCallbacks = [],
@@ -18,7 +16,7 @@ var query = (function (document) {
             return document.querySelectorAll(selector);
         }
     }
-    function lightJsElement(selector) {
+    function liteJSElement(selector) {
         if (typeof selector == "object") {
             switch (selector) {
                 case document: {
@@ -38,12 +36,12 @@ var query = (function (document) {
             this.elements = selector;
         }
     }
-    lightJsElement.prototype = {
+    liteJSElement.prototype = {
         find: function (selector) {
-            return new lightJsElement(find(selector, this));
+            return new liteJSElement(find(selector, this));
         },
-        first: function () {
-            return new lightJsElement(this.elements[0]);
+        first: function (selector) {
+            return new liteJSElement(this.elements[0]);
         },
         addClass: function (className) {
             var length = this.elements.length,
@@ -153,6 +151,9 @@ var query = (function (document) {
                     });
                 }
             }
+        },
+        parent: function () {
+            return new liteJSElement(this.elements[0].parentElement);
         }
     }
     document.addEventListener("DOMContentLoaded", function () {
@@ -160,7 +161,19 @@ var query = (function (document) {
             readyCallbacks[i].call();
         }
     });
-    return function (selector) {
-        return new lightJsElement(selector);
+    var queryFunc = function (selector) {
+        return new liteJSElement(selector);
+    };
+    queryFunc.extend = function () {
+        var extended = {};
+        for (key in arguments) {
+            var argument = arguments[key];
+            for (prop in argument) {
+                if (Object.prototype.hasOwnProperty.call(argument, prop)) {
+                    extended[prop] = argument[prop];
+                }
+            }
+        }
+        return extended;
     };
 }(document));
