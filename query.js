@@ -176,4 +176,5 @@ var query = (function (document) {
         }
         return extended;
     };
+    return queryFunc;
 }(document));
