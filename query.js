@@ -40,6 +40,9 @@ var query = (function (document) {
         find: function (selector) {
             return new liteJSElement(find(selector, this));
         },
+        get: function(index){
+            return this.elements[index];
+        },
         first: function (selector) {
             return new liteJSElement(this.elements[0]);
         },
@@ -57,7 +60,7 @@ var query = (function (document) {
             var length = this.elements.length;
             for (var i = 0; i < length; i++) {
                 if (this.elements[i].className.length) {
-                    this.elements[i].className.replace(className, "");
+                    this.elements[i].className = this.elements[i].className.replace(className, "");
                 }
             }
             return this;
