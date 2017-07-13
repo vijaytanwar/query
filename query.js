@@ -194,5 +194,28 @@ var query = (function (document) {
         }
         return extended;
     };
+    //www.test.com?name=abc&age=30; returns {name:abc, age:30}
+    queryFunc.queryParam = function (url) {
+        var params = {}, pieces, parts, i;
+        var question = url.lastIndexOf("?");
+        if (question !== -1) {
+            url = url.slice(question + 1);
+            pieces = url.split("&");
+            for (i = 0; i < pieces.length; i++) {
+                parts = pieces[i].split("=");
+                if (parts.length < 2) {
+                    parts.push("");
+                }
+                params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
+            }
+        }
+        return params;
+    }
+    queryFunc.new = function (element, queryElement) {
+        if (queryElement) {
+            return queryFunc(document.createElement(element));
+        }
+        return document.createElement(element);
+    };
     return queryFunc;
 }(document));
