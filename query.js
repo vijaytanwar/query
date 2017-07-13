@@ -68,18 +68,33 @@ var query = (function (document) {
         hasClass: function (className) {
             return this.elements[0].className.indexOf(className) > -1;
         },
-        append: function (str) {
-            var length = this.elements.length,
-                isObj = typeof str === "string";
+        append: function (html) {
+            var length = this.elements.length;
             for (var i = 0; i < length; i++) {
-                this.elements[i].innerHTML = this.elements[i].innerHTML + (isObj ? str : str.elements[0].innerHTML);
+                if (typeof html === "string") {
+                    this.elements[i].innerHTML = this.elements[i].innerHTML + html;
+                } else {
+                    if (html.elements.length & html.elements.length > 0)
+                        this.elements[i].appendChild(html.elements[0]);
+                }
             }
+            return this;
         },
-        html: function (str) {
-            var length = this.elements.length,
-                isObj = typeof str === "string";
-            for (var i = 0; i < length; i++) {
-                this.elements[i].innerHTML = isObj ? str : str.elements[0].innerHTML;
+        html: function (html) {
+            if (html || html === "") {
+                var length = this.elements.length;
+                for (var i = 0; i < length; i++) {
+                    if (typeof html === "string") {
+                        this.elements[i].innerHTML = html;
+                    } else {
+                        this.elements[i].innerHTML = "";
+                        if (html.elements.length & html.elements.length > 0)
+                            this.elements[i].appendChild(html.elements[0]);
+                    }
+                }
+                return this;
+            } else {
+                return this.elements[0].innerHTML;
             }
         },
         on: function (event, callback) {
