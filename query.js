@@ -1,22 +1,51 @@
 /**
 * One of the lightest DOM query library, which has number of reuable function, which can be used to manipulate DOM
 */
-var queryConfig = {
-    addEventListener: document.addEventListener,
-    removeEventListener: document.removeEventListener,
-    createEvent: "createEvent" in document,
-};
-var query = (function (document) {
-    var readyCallbacks = [],
+var readyCallbacks = [],
         callbacks = [];
+
+    var supportedFeatures = {
+        addEventListener: "addEventListener" in document,
+        removeEventListener: "removeEventListener" in document,
+        createEvent: "createEvent" in document,
+    };
+
+    //basic Polyfill
+    (function () {
+        if (!Element.prototype.matches) {
+            Element.prototype.matches =
+                Element.prototype.matchesSelector ||
+                Element.prototype.mozMatchesSelector ||
+                Element.prototype.msMatchesSelector ||
+                Element.prototype.oMatchesSelector ||
+                Element.prototype.webkitMatchesSelector ||
+                function (s) {
+                    var matches = (this.document || this.ownerDocument).querySelectorAll(selector),
+                        i = matches.length;
+                    while (--i >= 0 && matches.item(i) !== this) { }
+                    return i > -1;
+                };
+        }
+    }());
+
+    //returns the selected elements using selector from document or object
     function find(selector, object) {
         if (object) {
-            return object.elements[0].querySelectorAll(selector);
+            if (object.elements.length > 0) {
+                return object.elements[0].querySelectorAll(selector);
+            } else {
+                return [];
+            }
         } else {
             return document.querySelectorAll(selector);
         }
     }
-    function liteJSElement(selector) {
+    //find selected parent of element
+    function parent(el, selector) {
+        while ((el = el.parentElement) && !(queryFunc.matchesSelector(el, selector)));
+        return el;
+    }
+    function liteQueryElement(selector) {
         if (typeof selector == "object") {
             switch (selector) {
                 case document: {
@@ -25,6 +54,8 @@ var query = (function (document) {
                     }
                 }
             }
+
+            //for NodeList fix
             if (selector.length >= 0) {
                 this.elements = selector;
             } else {
@@ -36,15 +67,15 @@ var query = (function (document) {
             this.elements = selector;
         }
     }
-    liteJSElement.prototype = {
+    liteQueryElement.prototype = {
         find: function (selector) {
-            return new liteJSElement(find(selector, this));
+            return new liteQueryElement(find(selector, this));
         },
-        get: function(index){
+        get: function (index) {
             return this.elements[index];
         },
-        first: function (selector) {
-            return new liteJSElement(this.elements[0]);
+        first: function () {
+            return new liteQueryElement(this.elements.length > 0 ? this.elements[0] : {});
         },
         addClass: function (className) {
             var length = this.elements.length,
@@ -59,14 +90,12 @@ var query = (function (document) {
         removeClass: function (className) {
             var length = this.elements.length;
             for (var i = 0; i < length; i++) {
-                if (this.elements[i].className.length) {
-                    this.elements[i].className = this.elements[i].className.replace(className, "");
-                }
+                this.elements[i].classList.remove(className);
             }
             return this;
         },
         hasClass: function (className) {
-            return this.elements[0].className.indexOf(className) > -1;
+            return this.get(0).classList.contains(className);
         },
         append: function (html) {
             var length = this.elements.length;
@@ -75,7 +104,9 @@ var query = (function (document) {
                     this.elements[i].innerHTML = this.elements[i].innerHTML + html;
                 } else {
                     if (html.elements.length & html.elements.length > 0)
-                        this.elements[i].appendChild(html.elements[0]);
+                        for (var j = 0; j < html.elements.length; j++) {
+                            this.elements[i].appendChild(html.get(j));
+                        }
                 }
             }
             return this;
@@ -88,18 +119,21 @@ var query = (function (document) {
                         this.elements[i].innerHTML = html;
                     } else {
                         this.elements[i].innerHTML = "";
-                        if (html.elements.length & html.elements.length > 0)
-                            this.elements[i].appendChild(html.elements[0]);
+                        if (html.elements.length & html.elements.length > 0) {
+                            for (var j = 0; j < html.elements.length; j++) {
+                                this.elements[i].appendChild(html.get(j));
+                            }
+                        }
                     }
                 }
                 return this;
             } else {
-                return this.elements[0].innerHTML;
+                return this.get(0).innerHTML;
             }
         },
         on: function (event, callback) {
             for (var i = 0; i < this.elements.length; i++) {
-                if (queryConfig.addEventListener)
+                if (supportedFeatures.addEventListener)
                     this.elements[i].addEventListener(event, callback);
                 else
                     this.elements[i].attachEvent("on" + event, callback);
@@ -107,11 +141,12 @@ var query = (function (document) {
         },
         off: function (event, callback) {
             for (var i = 0; i < this.elements.length; i++) {
-                if (queryConfig.removeEventListener) {
+                if (supportedFeatures.removeEventListener) {
                     this.elements[i].removeEventListener(event, callback);
                 }
-                else
+                else {
                     this.elements[i].detachEvent("on" + event, callback);
+                }
             }
         },
         each: function (callback) {
@@ -122,18 +157,14 @@ var query = (function (document) {
         },
         trigger: function (event, data) {
             for (var i = 0; i < this.elements.length; i++) {
-                if (queryConfig.createEvent) {
-                    var evt = document.createEvent("HTMLEvents");
-                    evt.initEvent(event, false, true);
-                    this.elements[i].dispatchEvent(evt, data);
-                }
-                else {
-                    this.elements[i].fireEvent("on" + event, data);
-                }
+                var evt = document.createEvent("HTMLEvents");
+                evt.initEvent(event, true, true);
+                evt.data = data
+                this.elements[i].dispatchEvent(evt);
             }
         },
         prop: function (name, value) {
-            if (value) {
+            if (typeof value !== "undefined") {
                 var length = this.elements.length;
                 for (var i = 0; i < length; i++) {
                     this.elements[i][name] = value;
@@ -144,7 +175,7 @@ var query = (function (document) {
             }
         },
         attr: function (name, value) {
-            if (value) {
+            if (typeof value !== "undefined") {
                 var length = this.elements.length;
                 for (var i = 0; i < length; i++) {
                     this.elements[i].setAttribute(name, value);
@@ -158,7 +189,7 @@ var query = (function (document) {
             return this.attr("data-" + name, value);
         },
         css: function (obj, value) {
-            if (typeof obj == "string") {
+            if (typeof obj === "string") {
                 this.each(function (element) {
                     element.style[obj] = value;
                 });
@@ -170,8 +201,17 @@ var query = (function (document) {
                 }
             }
         },
-        parent: function () {
-            return new liteJSElement(this.elements[0].parentElement);
+        parent: function (selector) {
+            if (selector) {
+                var parentElement = parent(this.elements[0], selector);
+                if (parentElement) {
+                    return new liteQueryElement(parentElement);
+                } else {
+                    return new liteQueryElement({});
+                }
+            } else {
+                return new liteQueryElement(this.get(0).parentElement);
+            }
         }
     }
     document.addEventListener("DOMContentLoaded", function () {
@@ -180,7 +220,7 @@ var query = (function (document) {
         }
     });
     var queryFunc = function (selector) {
-        return new liteJSElement(selector);
+        return new liteQueryElement(selector);
     };
     queryFunc.extend = function () {
         var extended = {};
@@ -194,7 +234,6 @@ var query = (function (document) {
         }
         return extended;
     };
-    //www.test.com?name=abc&age=30; returns {name:abc, age:30}
     queryFunc.queryParam = function (url) {
         var params = {}, pieces, parts, i;
         var question = url.lastIndexOf("?");
@@ -217,5 +256,14 @@ var query = (function (document) {
         }
         return document.createElement(element);
     };
+    queryFunc.token = function () {
+        return Math.floor((1 + Math.random()) * 0x10000)
+            .toString(16)
+            .substring(1);
+    };
+    queryFunc.matchesSelector = function (elem, selector) {
+        return elem.matches(selector);
+    }
+    queryFunc.DOMFeatures = supportedFeatures;
     return queryFunc;
 }(document));
