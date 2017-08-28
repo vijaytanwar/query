@@ -1,8 +1,9 @@
 /**
 * One of the lightest DOM query library, which has number of reuable function, which can be used to manipulate DOM
 */
-var readyCallbacks = [],
-        callbacks = [];
+ (function(document){   
+    var readyCallbacks = [],
+    callbacks = [];
 
     var supportedFeatures = {
         addEventListener: "addEventListener" in document,
@@ -265,5 +266,5 @@ var readyCallbacks = [],
         return elem.matches(selector);
     }
     queryFunc.DOMFeatures = supportedFeatures;
-    return queryFunc;
+    window.ltQuery = queryFunc;
 }(document));
